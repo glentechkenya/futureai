@@ -15,7 +15,10 @@ export default async function handler(req, res) {
           Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ inputs: message })
+        body: JSON.stringify({
+          inputs: message,
+          options: { wait_for_model: true }
+        })
       }
     );
 
@@ -23,11 +26,17 @@ export default async function handler(req, res) {
 
     let reply = "Sorry, I couldn't understand that!";
 
-    // Hugging Face may return an array
-    if (Array.isArray(data) && data[0]?.generated_text) {
-      reply = data[0].generated_text;
+    // Hugging Face may return an array of objects
+    if (Array.isArray(data)) {
+      if (data[0]?.generated_text) {
+        reply = data[0].generated_text;
+      } else if (data[0]?.error) {
+        reply = `AI Error: ${data[0].error}`;
+      }
     } else if (data.generated_text) {
       reply = data.generated_text;
+    } else if (data.error) {
+      reply = `AI Error: ${data.error}`;
     }
 
     res.status(200).json({ reply });
