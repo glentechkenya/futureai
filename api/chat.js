@@ -8,7 +8,7 @@ export default async function handler(req, res) {
 
   try {
     const response = await fetch(
-      "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium",
+      "https://router.huggingface.co/api/v1/pipeline/text-generation/microsoft/DialoGPT-medium",
       {
         method: "POST",
         headers: {
@@ -17,7 +17,7 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           inputs: message,
-          options: { wait_for_model: true }
+          parameters: { max_new_tokens: 100 }
         })
       }
     );
@@ -26,13 +26,8 @@ export default async function handler(req, res) {
 
     let reply = "Sorry, I couldn't understand that!";
 
-    // Hugging Face may return an array of objects
-    if (Array.isArray(data)) {
-      if (data[0]?.generated_text) {
-        reply = data[0].generated_text;
-      } else if (data[0]?.error) {
-        reply = `AI Error: ${data[0].error}`;
-      }
+    if (Array.isArray(data) && data[0]?.generated_text) {
+      reply = data[0].generated_text;
     } else if (data.generated_text) {
       reply = data.generated_text;
     } else if (data.error) {
