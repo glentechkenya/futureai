@@ -9,18 +9,51 @@
 * {
   box-sizing: border-box;
   font-family: "Segoe UI", system-ui, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+body, html {
+  height: 100%;
+  width: 100%;
 }
 
 body {
-  margin: 0;
-  height: 100vh;
-  background: radial-gradient(circle at top, #14002b, #05000f);
-  display: flex;
-  flex-direction: column;
-  color: #ffffff;
+  background: #05000f;
+  color: white;
 }
 
-/* HEADER */
+/* SPLASH SCREEN */
+#splash {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  background: radial-gradient(circle at top, #14002b, #05000f);
+}
+
+#splash img {
+  width: 150px;
+  height: 150px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px #b300ff;
+  animation: glow 1.5s infinite alternate;
+}
+
+@keyframes glow {
+  0% { box-shadow: 0 0 10px #b300ff; }
+  100% { box-shadow: 0 0 30px #ff00cc; }
+}
+
+/* MAIN CHAT AREA */
+#main {
+  display: none;
+  flex-direction: column;
+  height: 100vh;
+}
+
 header {
   display: flex;
   align-items: center;
@@ -47,7 +80,6 @@ header span {
   opacity: 0.85;
 }
 
-/* CHAT AREA */
 #chat {
   flex: 1;
   padding: 14px;
@@ -55,18 +87,15 @@ header span {
   scroll-behavior: smooth;
 }
 
-/* CHAT BUBBLES */
 .bubble {
   max-width: 78%;
   padding: 12px 14px;
   margin-bottom: 10px;
   border-radius: 14px;
   line-height: 1.4;
-  animation: slideUp 0.25s ease;
   word-wrap: break-word;
 }
 
-/* USER */
 .user {
   margin-left: auto;
   background: linear-gradient(135deg, #7a00ff, #4b00ff);
@@ -74,7 +103,6 @@ header span {
   border-bottom-right-radius: 4px;
 }
 
-/* AI */
 .ai {
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(120,120,255,0.35);
@@ -82,7 +110,6 @@ header span {
   border-bottom-left-radius: 4px;
 }
 
-/* INPUT */
 .input-area {
   display: flex;
   gap: 8px;
@@ -121,17 +148,19 @@ button {
   background: transparent;
   border: 1px solid #6a00ff;
 }
-
-/* ANIMATION */
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
 </style>
 </head>
 
 <body>
 
+<!-- SPLASH SCREEN -->
+<div id="splash">
+  <img src="assets/mjsb8hpnPixazoAi.png" alt="FUTURE AI Logo">
+  <h2 style="color:#b300ff; margin-top:20px;">FUTURE AI by Glentech</h2>
+</div>
+
+<!-- MAIN CHAT AREA -->
+<div id="main">
 <header>
   <img src="assets/mjsb8hpnPixazoAi.png" alt="FUTURE AI Logo">
   <div>
@@ -147,11 +176,19 @@ button {
   <input id="input" placeholder="Chat with FUTURE AI..." />
   <button class="send-btn" onclick="send()">➤</button>
 </div>
+</div>
 
 <script>
 const chat = document.getElementById("chat");
 const input = document.getElementById("input");
 
+// Show splash screen for 5 seconds, then show main chat
+setTimeout(() => {
+  document.getElementById("splash").style.display = "none";
+  document.getElementById("main").style.display = "flex";
+}, 5000);
+
+// Chat bubble functions
 function bubble(text, type) {
   const div = document.createElement("div");
   div.className = "bubble " + type;
