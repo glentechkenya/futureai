@@ -1,62 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FutureAI Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body { font-family: Arial; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg,#7b2ff7,#f107a3); color:#fff; }
-    canvas { background:#fff; border-radius:15px; margin-top:20px; max-width:90%; }
-    input, button { padding:10px; margin:5px; border-radius:8px; border:none; font-size:16px; }
-    button { background-color:#f107a3; color:#fff; cursor:pointer; }
-    #status { margin-top:10px; font-weight:bold; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Future AI Chart</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #6a0dad, #ff6600);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+  }
+  canvas {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 10px;
+    max-width: 100%;
+  }
+  button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    border: none;
+    background: #ff6600;
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  input {
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    margin-top: 20px;
+    width: 80%;
+    max-width: 400px;
+  }
+</style>
 </head>
 <body>
-  <h1>FutureAI Dashboard</h1>
-  <input type="text" id="promptInput" placeholder="Enter prompt" />
-  <button id="generateBtn">Generate Chart</button>
-  <div id="status">Waiting for input...</div>
-  <canvas id="futureAIChart" width="400" height="200"></canvas>
 
-  <script>
-    const ctx = document.getElementById('futureAIChart').getContext('2d');
-    const chart = new Chart(ctx, {
-      type: 'bar',
-      data: { labels: [], datasets: [{ label: 'GPT-5 Response', data: [], backgroundColor:'rgba(241,7,163,0.5)', borderColor:'rgba(123,47,247,1)', borderWidth:2, tension:0.3 }] },
-      options: { responsive:true, scales:{ y:{ beginAtZero:true } } }
-    });
+<h1>Future AI Response Chart</h1>
+<input type="text" id="userPrompt" placeholder="Ask Future AI something..." />
+<button onclick="sendPrompt()">Send</button>
+<canvas id="aiChart" width="400" height="200"></canvas>
 
-    async function updateChart(prompt) {
-      const status = document.getElementById('status');
-      status.innerText = 'FUTURE AI is processing...';
-
-      try {
-        const res = await fetch('http://localhost:3000/api/gpt5', { // <- Your backend endpoint
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ prompt })
-        });
-
-        if(!res.ok) throw new Error('API request failed');
-
-        const data = await res.json();
-        chart.data.labels = data.labels;
-        chart.data.datasets[0].data = data.values;
-        chart.update();
-
-        status.innerText = 'FUTURE AI completed!';
-      } catch(err) {
-        console.error(err);
-        status.innerText = 'Error: ' + err.message;
-      }
+<script>
+const ctx = document.getElementById('aiChart').getContext('2d');
+let chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [{
+            label: 'AI Response Length',
+            data: [],
+            borderColor: '#fff',
+            backgroundColor: 'rgba(255, 255, 255, 0.3)',
+            fill: true,
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { labels: { color: 'white' } }
+        },
+        scales: {
+            x: { ticks: { color: 'white' } },
+            y: { ticks: { color: 'white' } }
+        }
     }
+});
 
-    document.getElementById('generateBtn').addEventListener('click', ()=>{
-      const prompt = document.getElementById('promptInput').value;
-      if(prompt) updateChart(prompt);
+async function sendPrompt() {
+    const prompt = document.getElementById('userPrompt').value;
+    if(!prompt) return alert("Please type something!");
+
+    // Call your OpenAI API
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer YOUR_OPENAI_API_KEY' // Replace with your key
+        },
+        body: JSON.stringify({
+            model: "gpt-4",
+            messages: [{ role: "user", content: prompt }]
+        })
     });
-  </script>
+    const data = await response.json();
+    const aiText = data.choices[0].message.content;
+
+    // Add data to chart
+    chart.data.labels.push(prompt);
+    chart.data.datasets[0].data.push(aiText.length);
+    chart.update();
+
+    document.getElementById('userPrompt').value = '';
+}
+</script>
+
 </body>
 </html>
